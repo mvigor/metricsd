@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mvigor/metricsd/internal/storage"
 	"net/http"
+	"strconv"
 )
 
 func ShowHandler(params map[string]string, storage storage.Storage) http.HandlerFunc {
@@ -40,7 +41,14 @@ func UpdateHandler(params map[string]string, storage storage.Storage) http.Handl
 			return
 		}
 
-		err := storage.SetMetric(metricName, metricValue)
+		value, err := strconv.ParseFloat(metricValue, 8)
+
+		if err != nil {
+			resp.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		err = storage.SetMetric(metricName, value)
 		resp.Header().Set("Content-Type", "text/html")
 		if err != nil {
 			resp.WriteHeader(http.StatusInternalServerError)

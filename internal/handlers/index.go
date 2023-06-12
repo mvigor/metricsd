@@ -23,7 +23,7 @@ func IndexHandler(params map[string]string, storage storage.Storage) http.Handle
 		resp.Header().Set("Content-Type", "text/html")
 		for _, k := range keys {
 			val, _ := storage.GetMetric(k)
-			resp.Write([]byte(fmt.Sprintf("%s = %s<br>\n", k, val)))
+			resp.Write([]byte(fmt.Sprintf("%s = %v<br>\n", k, val)))
 		}
 		resp.WriteHeader(http.StatusOK)
 	}

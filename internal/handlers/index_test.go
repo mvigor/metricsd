@@ -14,11 +14,11 @@ import (
 
 func TestIndexHandler(t *testing.T) {
 	storage := storage.MemoryStorage{
-		Metrics: map[string]string{
-			"metric1": "1",
-			"metric2": "value",
-			"metric3": "value2",
-			"metric4": "",
+		Metrics: map[string]float64{
+			"metric1": 11,
+			"metric2": 22,
+			"metric3": 33,
+			"metric4": 44,
 		},
 	}
 
@@ -31,7 +31,7 @@ func TestIndexHandler(t *testing.T) {
 
 	for _, k := range keys {
 		val := storage.Metrics[k]
-		successBody += fmt.Sprintf("%s = %s<br>\n", k, val)
+		successBody += fmt.Sprintf("%s = %v<br>\n", k, val)
 	}
 
 	testCases := []struct {

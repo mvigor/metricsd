@@ -8,11 +8,11 @@ import (
 
 func TestMemoryStorage_SetMetric(t *testing.T) {
 	type fields struct {
-		Metrics map[string]string
+		Metrics map[string]float64
 	}
 	type args struct {
 		metricName  string
-		metricValue string
+		metricValue float64
 	}
 	tests := []struct {
 		name      string
@@ -24,11 +24,11 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]string{},
+				Metrics: map[string]float64{},
 			},
 			args: args{
 				metricName:  "metric 1",
-				metricValue: "value1",
+				metricValue: 44,
 			},
 			wantErr:   false,
 			wantCount: 1,
@@ -36,13 +36,13 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 		{
 			name: "test case #2",
 			fields: fields{
-				Metrics: map[string]string{
-					"metric2": "value2",
+				Metrics: map[string]float64{
+					"metric2": 4,
 				},
 			},
 			args: args{
 				metricName:  "metric2",
-				metricValue: "value3",
+				metricValue: 33,
 			},
 			wantErr:   false,
 			wantCount: 1,
@@ -61,48 +61,48 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 
 func TestMemoryStorage_GetMetric(t *testing.T) {
 	type fields struct {
-		Metrics map[string]string
+		Metrics map[string]float64
 	}
 	type args struct {
 		metricName  string
-		metricValue string
+		metricValue float64
 	}
 	tests := []struct {
 		name      string
 		fields    fields
 		args      args
 		wantOk    bool
-		wantValue string
+		wantValue float64
 	}{
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]string{
-					"metric1": "value1",
-					"metric2": "value2",
-					"metric3": "value3",
-					"metric4": "value4",
+				Metrics: map[string]float64{
+					"metric1": 11,
+					"metric2": 33,
+					"metric3": 55,
+					"metric4": 66,
 				},
 			},
 			args: args{
 				metricName: "metric1",
 			},
 			wantOk:    true,
-			wantValue: "value1",
+			wantValue: 11,
 		},
 		{
 			name: "test case #2",
 			fields: fields{
-				Metrics: map[string]string{
-					"metric1": "value1",
-					"metric2": "value2",
-					"metric3": "value3",
-					"metric4": "value4",
+				Metrics: map[string]float64{
+					"metric1": 101,
+					"metric2": 102,
+					"metric3": 103,
+					"metric4": 104,
 				},
 			},
 			args: args{
 				metricName:  "metric5",
-				metricValue: "value3",
+				metricValue: 11,
 			},
 			wantOk: false,
 		},
@@ -123,28 +123,28 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 
 func TestMemoryStorage_IndexMetrics(t *testing.T) {
 	type fields struct {
-		Metrics map[string]string
+		Metrics map[string]float64
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   map[string]string
+		want   map[string]float64
 	}{
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]string{
-					"metric1": "value1",
-					"metric2": "value2",
-					"metric3": "value3",
-					"metric4": "value4",
+				Metrics: map[string]float64{
+					"metric1": 55,
+					"metric2": 66,
+					"metric3": 77,
+					"metric4": 88,
 				},
 			},
-			want: map[string]string{
-				"metric1": "value1",
-				"metric2": "value2",
-				"metric3": "value3",
-				"metric4": "value4",
+			want: map[string]float64{
+				"metric1": 55,
+				"metric2": 66,
+				"metric3": 77,
+				"metric4": 88,
 			},
 		},
 	}

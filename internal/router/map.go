@@ -21,7 +21,7 @@ var Map = []interfaces.RoutingEndpoint{
 	},
 	{
 		Method:      http.MethodPost,
-		Pattern:     "/update/{metric_name}/{metric_value}",
+		Pattern:     "/update/counter/{metric_name}/{metric_value}",
 		Handler:     handlers.UpdateHandler,
 		Middlewares: interfaces.Middlewares{},
 	},

@@ -7,16 +7,17 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
 func TestShowHandler(t *testing.T) {
 	storage := storage.MemoryStorage{
-		Metrics: map[string]string{
-			"metric1": "1",
-			"metric2": "value",
-			"metric3": "value2",
-			"metric4": "",
+		Metrics: map[string]float64{
+			"metric1": 0,
+			"metric2": 1,
+			"metric3": 444,
+			"metric4": 444,
 		},
 	}
 
@@ -33,7 +34,7 @@ func TestShowHandler(t *testing.T) {
 			method:              http.MethodGet,
 			request:             map[string]string{"metric_name": "metric1"},
 			expectedCode:        http.StatusOK,
-			expectedBody:        "metric name = metric1, value = 1",
+			expectedBody:        "metric name = metric1, value = 0",
 			expectedContentType: "text/html",
 		},
 		{
@@ -41,7 +42,7 @@ func TestShowHandler(t *testing.T) {
 			method:              http.MethodGet,
 			request:             map[string]string{"metric_name": "metric3"},
 			expectedCode:        http.StatusOK,
-			expectedBody:        "metric name = metric3, value = value2",
+			expectedBody:        "metric name = metric3, value = 444",
 			expectedContentType: "text/html",
 		},
 		{
@@ -94,5 +95,96 @@ func TestShowHandler(t *testing.T) {
 			}
 		})
 
+	}
+}
+
+func TestUpdateHandler(t *testing.T) {
+	type args struct {
+		params  map[string]string
+		storage storage.Storage
+	}
+	tests := []struct {
+		name       string
+		args       args
+		method     string
+		wantCount  int
+		wantResult map[string]float64
+		wantStatus int
+	}{
+		{
+			name:   "test case #1",
+			method: http.MethodPost,
+			args: args{
+				params: map[string]string{
+					"metric_name":  "metric2",
+					"metric_value": "102",
+				},
+				storage: &storage.MemoryStorage{
+					Metrics: map[string]float64{
+						"metric1": 100,
+					},
+				},
+			},
+			wantCount: 2,
+			wantResult: map[string]float64{
+				"metric1": 100,
+				"metric2": 102,
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:   "test case #2",
+			method: http.MethodPost,
+			args: args{
+				params: map[string]string{
+					"metric_name":  "metric2",
+					"metric_value": "102",
+				},
+				storage: &storage.MemoryStorage{
+					Metrics: map[string]float64{
+						"metric2": 100,
+					},
+				},
+			},
+			wantCount: 1,
+			wantResult: map[string]float64{
+				"metric2": 102,
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:   "test case #3",
+			method: http.MethodPost,
+			args: args{
+				params: map[string]string{
+					"metric2": "test",
+				},
+				storage: &storage.MemoryStorage{
+					Metrics: map[string]float64{
+						"metric3": 100,
+					},
+				},
+			},
+			wantCount: 1,
+			wantResult: map[string]float64{
+				"metric1": 100,
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request := httptest.NewRequest(tt.method, "/", nil)
+			w := httptest.NewRecorder()
+			handlerFunc := UpdateHandler(tt.args.params, tt.args.storage)
+			handlerFunc(w, request)
+			res := w.Result()
+			assert.Equal(t, tt.wantStatus, res.StatusCode)
+			if res.StatusCode == http.StatusOK {
+				assert.Equal(t, len(tt.args.storage.IndexMetrics()), tt.wantCount)
+				assert.True(t, reflect.DeepEqual(tt.wantResult, tt.args.storage.IndexMetrics()))
+			}
+
+		})
 	}
 }
