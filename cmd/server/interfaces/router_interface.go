@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"github.com/mvigor/metricsd/internal/storage"
+	"github.com/mvigor/metricsd/cmd/server/storage"
 	"net/http"
 )
 

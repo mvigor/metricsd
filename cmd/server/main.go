@@ -1,20 +1,20 @@
 package main
 
 import (
-	"github.com/mvigor/metricsd/internal/interfaces"
-	router2 "github.com/mvigor/metricsd/internal/router"
+	"github.com/mvigor/metricsd/cmd/server/interfaces"
+	"github.com/mvigor/metricsd/cmd/server/router"
 	"log"
 	"net/http"
 )
 
 func loadRoutingMap() interfaces.RoutingMap {
-	endpoints := router2.Map
+	endpoints := router.Map
 	return interfaces.RoutingMap{Endpoints: endpoints}
 }
 
 func main() {
 
-	r := router2.ChiRouter{}
+	r := router.ChiRouter{}
 	mux, err := r.LoadRoutingTable(loadRoutingMap())
 
 	if err != nil {

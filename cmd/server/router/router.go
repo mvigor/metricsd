@@ -3,8 +3,8 @@ package router
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/mvigor/metricsd/internal/interfaces"
-	"github.com/mvigor/metricsd/internal/storage"
+	"github.com/mvigor/metricsd/cmd/server/interfaces"
+	"github.com/mvigor/metricsd/cmd/server/storage"
 	"net/http"
 )
 
