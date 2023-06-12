@@ -209,6 +209,7 @@ func TestUpdateHandler(t *testing.T) {
 			handlerFunc(w, request)
 			res := w.Result()
 			assert.Equal(t, tt.wantStatus, res.StatusCode)
+			defer res.Body.Close()
 			if res.StatusCode == http.StatusOK {
 				assert.Equal(t, len(tt.args.storage.IndexMetrics()), tt.wantCount)
 			}

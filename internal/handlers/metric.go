@@ -46,13 +46,7 @@ func UpdateHandler(params map[string]string, storage storage.Storage) http.Handl
 			resp.WriteHeader(http.StatusBadRequest)
 			return
 		}
-
 		resp.Header().Set("Content-Type", "text/html")
-		if err != nil {
-			resp.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
 		resp.Write([]byte("updated"))
 		resp.WriteHeader(http.StatusOK)
 	}
