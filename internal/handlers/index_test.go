@@ -14,11 +14,23 @@ import (
 
 func TestIndexHandler(t *testing.T) {
 	storage := storage.MemoryStorage{
-		Metrics: map[string]float64{
-			"metric1": 11,
-			"metric2": 22,
-			"metric3": 33,
-			"metric4": 44,
+		Metrics: map[string]storage.MetricRecord{
+			"metric1": {
+				VType: storage.COUNTER,
+				Value: 11,
+			},
+			"metric2": {
+				VType: storage.COUNTER,
+				Value: 100,
+			},
+			"metric3": {
+				VType: storage.COUNTER,
+				Value: 200,
+			},
+			"metric4": {
+				VType: storage.COUNTER,
+				Value: 202,
+			},
 		},
 	}
 

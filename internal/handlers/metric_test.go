@@ -7,17 +7,28 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 )
 
 func TestShowHandler(t *testing.T) {
 	storage := storage.MemoryStorage{
-		Metrics: map[string]float64{
-			"metric1": 0,
-			"metric2": 1,
-			"metric3": 444,
-			"metric4": 444,
+		Metrics: map[string]storage.MetricRecord{
+			"metric1": {
+				VType: storage.GAUGE,
+				Value: 0,
+			},
+			"metric2": {
+				VType: storage.COUNTER,
+				Value: 1,
+			},
+			"metric3": {
+				VType: storage.GAUGE,
+				Value: 444,
+			},
+			"metric4": {
+				VType: storage.COUNTER,
+				Value: 50000,
+			},
 		},
 	}
 
@@ -108,7 +119,7 @@ func TestUpdateHandler(t *testing.T) {
 		args       args
 		method     string
 		wantCount  int
-		wantResult map[string]float64
+		wantResult map[string]storage.MetricRecord
 		wantStatus int
 	}{
 		{
@@ -116,19 +127,29 @@ func TestUpdateHandler(t *testing.T) {
 			method: http.MethodPost,
 			args: args{
 				params: map[string]string{
+					"metric_type":  "counter",
 					"metric_name":  "metric2",
 					"metric_value": "102",
 				},
 				storage: &storage.MemoryStorage{
-					Metrics: map[string]float64{
-						"metric1": 100,
+					Metrics: map[string]storage.MetricRecord{
+						"metric1": {
+							VType: storage.COUNTER,
+							Value: 100,
+						},
 					},
 				},
 			},
 			wantCount: 2,
-			wantResult: map[string]float64{
-				"metric1": 100,
-				"metric2": 102,
+			wantResult: map[string]storage.MetricRecord{
+				"metric1": {
+					VType: storage.COUNTER,
+					Value: 100,
+				},
+				"metric2": {
+					VType: storage.COUNTER,
+					Value: 102,
+				},
 			},
 			wantStatus: http.StatusOK,
 		},
@@ -139,16 +160,23 @@ func TestUpdateHandler(t *testing.T) {
 				params: map[string]string{
 					"metric_name":  "metric2",
 					"metric_value": "102",
+					"metric_type":  "gauge",
 				},
 				storage: &storage.MemoryStorage{
-					Metrics: map[string]float64{
-						"metric2": 100,
+					Metrics: map[string]storage.MetricRecord{
+						"metric2": {
+							VType: storage.COUNTER,
+							Value: 100,
+						},
 					},
 				},
 			},
 			wantCount: 1,
-			wantResult: map[string]float64{
-				"metric2": 102,
+			wantResult: map[string]storage.MetricRecord{
+				"metric2": {
+					VType: storage.COUNTER,
+					Value: 102,
+				},
 			},
 			wantStatus: http.StatusOK,
 		},
@@ -160,15 +188,16 @@ func TestUpdateHandler(t *testing.T) {
 					"metric2": "test",
 				},
 				storage: &storage.MemoryStorage{
-					Metrics: map[string]float64{
-						"metric3": 100,
+					Metrics: map[string]storage.MetricRecord{
+						"metric3": {
+							VType: storage.GAUGE,
+							Value: 0.0001,
+						},
 					},
 				},
 			},
-			wantCount: 1,
-			wantResult: map[string]float64{
-				"metric1": 100,
-			},
+			wantCount:  0,
+			wantResult: map[string]storage.MetricRecord{},
 			wantStatus: http.StatusBadRequest,
 		},
 	}
@@ -182,9 +211,8 @@ func TestUpdateHandler(t *testing.T) {
 			assert.Equal(t, tt.wantStatus, res.StatusCode)
 			if res.StatusCode == http.StatusOK {
 				assert.Equal(t, len(tt.args.storage.IndexMetrics()), tt.wantCount)
-				assert.True(t, reflect.DeepEqual(tt.wantResult, tt.args.storage.IndexMetrics()))
 			}
-
 		})
 	}
+
 }

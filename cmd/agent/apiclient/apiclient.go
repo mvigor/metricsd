@@ -2,6 +2,7 @@ package apiclient
 
 import (
 	"fmt"
+	"github.com/mvigor/metricsd/cmd/agent/collectors"
 	"net/http"
 )
 
@@ -26,9 +27,9 @@ func (c *APIHttpClient) SetServer(server string) {
 
 }
 
-func (c *APIHttpClient) PostMetric(sname string, value interface{}) {
+func (c *APIHttpClient) PostMetric(sname string, value collectors.Value) {
 
-	url := fmt.Sprintf("http://%s/update/%s/%s", c.server, sname, serializeData(value))
+	url := fmt.Sprintf("http://%s/update/%s/%s/%s", c.server, value.VType, sname, serializeData(value.Value))
 	resp, err := c.client.Post(url, "text/html", nil)
 	if err != nil {
 		fmt.Println(err)

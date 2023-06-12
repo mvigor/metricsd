@@ -6,8 +6,8 @@ var collectors = []Collector{
 	&Random{},
 }
 
-func CollectData() map[string]interface{} {
-	metrics := make(map[string]interface{})
+func CollectData() map[string]Value {
+	metrics := make(map[string]Value)
 	for _, collector := range collectors {
 		res := collector.GetMetrics()
 		mergeMaps(metrics, res)
@@ -15,7 +15,7 @@ func CollectData() map[string]interface{} {
 	return metrics
 }
 
-func mergeMaps(m1 map[string]interface{}, m2 map[string]interface{}) {
+func mergeMaps(m1 map[string]Value, m2 map[string]Value) {
 	for k, v := range m2 {
 		m1[k] = v
 	}

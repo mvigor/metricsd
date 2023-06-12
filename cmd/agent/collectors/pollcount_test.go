@@ -1,6 +1,7 @@
 package collectors
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,15 +13,18 @@ func TestPoolCount_GetMetrics(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   map[string]interface{}
+		want   map[string]Value
 	}{
 		{
 			name: "test case #1",
 			fields: fields{
 				count: 0,
 			},
-			want: map[string]interface{}{
-				"PollCount": int64(1),
+			want: map[string]Value{
+				"PollCount": {
+					VType: COUNTER,
+					Value: 1,
+				},
 			},
 		},
 	}
@@ -29,7 +33,9 @@ func TestPoolCount_GetMetrics(t *testing.T) {
 			p := &PoolCount{
 				count: tt.fields.count,
 			}
-			assert.Equal(t, tt.want, p.GetMetrics(), "GetMetrics()")
+			expect, _ := json.Marshal(tt.want)
+			actual, _ := json.Marshal(p.GetMetrics())
+			assert.Equal(t, expect, actual, "GetMetrics()")
 		})
 	}
 }

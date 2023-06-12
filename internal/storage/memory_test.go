@@ -8,11 +8,12 @@ import (
 
 func TestMemoryStorage_SetMetric(t *testing.T) {
 	type fields struct {
-		Metrics map[string]float64
+		Metrics map[string]MetricRecord
 	}
 	type args struct {
 		metricName  string
-		metricValue float64
+		metricValue string
+		metricType  string
 	}
 	tests := []struct {
 		name      string
@@ -24,11 +25,12 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]float64{},
+				Metrics: map[string]MetricRecord{},
 			},
 			args: args{
 				metricName:  "metric 1",
-				metricValue: 44,
+				metricValue: "44",
+				metricType:  "gauge",
 			},
 			wantErr:   false,
 			wantCount: 1,
@@ -36,15 +38,37 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 		{
 			name: "test case #2",
 			fields: fields{
-				Metrics: map[string]float64{
-					"metric2": 4,
+				Metrics: map[string]MetricRecord{
+					"metric2": {
+						Value: 35,
+						VType: COUNTER,
+					},
 				},
 			},
 			args: args{
 				metricName:  "metric2",
-				metricValue: 33,
+				metricValue: "33",
+				metricType:  "counter",
 			},
 			wantErr:   false,
+			wantCount: 1,
+		},
+		{
+			name: "test case #3",
+			fields: fields{
+				Metrics: map[string]MetricRecord{
+					"metric2": {
+						Value: 35,
+						VType: COUNTER,
+					},
+				},
+			},
+			args: args{
+				metricName:  "metric3",
+				metricValue: "33",
+				metricType:  "unknown",
+			},
+			wantErr:   true,
 			wantCount: 1,
 		},
 	}
@@ -53,7 +77,11 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 			m := &MemoryStorage{
 				Metrics: tt.fields.Metrics,
 			}
-			assert.NoError(t, m.SetMetric(tt.args.metricName, tt.args.metricValue))
+			if tt.wantErr {
+				assert.Error(t, m.SetMetric(tt.args.metricName, tt.args.metricValue, tt.args.metricType))
+				return
+			}
+			assert.NoError(t, m.SetMetric(tt.args.metricName, tt.args.metricValue, tt.args.metricType))
 			assert.Equal(t, len(m.Metrics), tt.wantCount)
 		})
 	}
@@ -61,27 +89,40 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 
 func TestMemoryStorage_GetMetric(t *testing.T) {
 	type fields struct {
-		Metrics map[string]float64
+		Metrics map[string]MetricRecord
 	}
 	type args struct {
 		metricName  string
-		metricValue float64
+		metricValue interface{}
+		metricType  VType
 	}
 	tests := []struct {
 		name      string
 		fields    fields
 		args      args
 		wantOk    bool
-		wantValue float64
+		wantValue interface{}
 	}{
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]float64{
-					"metric1": 11,
-					"metric2": 33,
-					"metric3": 55,
-					"metric4": 66,
+				Metrics: map[string]MetricRecord{
+					"metric1": {
+						VType: COUNTER,
+						Value: 11,
+					},
+					"metric2": {
+						VType: GAUGE,
+						Value: 44,
+					},
+					"metric3": {
+						VType: COUNTER,
+						Value: 55,
+					},
+					"metric4": {
+						VType: COUNTER,
+						Value: 66,
+					},
 				},
 			},
 			args: args{
@@ -93,11 +134,23 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 		{
 			name: "test case #2",
 			fields: fields{
-				Metrics: map[string]float64{
-					"metric1": 101,
-					"metric2": 102,
-					"metric3": 103,
-					"metric4": 104,
+				Metrics: map[string]MetricRecord{
+					"metric1": {
+						VType: COUNTER,
+						Value: 33,
+					},
+					"metric2": {
+						VType: GAUGE,
+						Value: 44,
+					},
+					"metric3": {
+						VType: COUNTER,
+						Value: 55,
+					},
+					"metric4": {
+						VType: COUNTER,
+						Value: 66,
+					},
 				},
 			},
 			args: args{
@@ -115,7 +168,7 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 			v, ok := m.GetMetric(tt.args.metricName)
 			assert.Equal(t, tt.wantOk, ok)
 			if ok {
-				assert.Equal(t, tt.wantValue, v)
+				assert.Equal(t, tt.wantValue, v.Value)
 			}
 		})
 	}
@@ -123,28 +176,52 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 
 func TestMemoryStorage_IndexMetrics(t *testing.T) {
 	type fields struct {
-		Metrics map[string]float64
+		Metrics map[string]MetricRecord
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   map[string]float64
+		want   map[string]MetricRecord
 	}{
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]float64{
-					"metric1": 55,
-					"metric2": 66,
-					"metric3": 77,
-					"metric4": 88,
+				Metrics: map[string]MetricRecord{
+					"metric1": {
+						VType: COUNTER,
+						Value: 55,
+					},
+					"metric2": {
+						VType: COUNTER,
+						Value: 66,
+					},
+					"metric3": {
+						VType: COUNTER,
+						Value: 77,
+					},
+					"metric4": {
+						VType: COUNTER,
+						Value: 88,
+					},
 				},
 			},
-			want: map[string]float64{
-				"metric1": 55,
-				"metric2": 66,
-				"metric3": 77,
-				"metric4": 88,
+			want: map[string]MetricRecord{
+				"metric1": {
+					VType: COUNTER,
+					Value: 55,
+				},
+				"metric2": {
+					VType: COUNTER,
+					Value: 66,
+				},
+				"metric3": {
+					VType: COUNTER,
+					Value: 77,
+				},
+				"metric4": {
+					VType: COUNTER,
+					Value: 88,
+				},
 			},
 		},
 	}

@@ -38,9 +38,9 @@ var memoryMetrics = map[string]bool{
 type Memory struct {
 }
 
-func (m *Memory) GetMetrics() map[string]interface{} {
+func (m *Memory) GetMetrics() map[string]Value {
 	var rtm runtime.MemStats
-	var metrics = make(map[string]interface{})
+	var metrics = make(map[string]Value)
 	runtime.ReadMemStats(&rtm)
 	var inInterface map[string]interface{}
 	inrec, _ := json.Marshal(rtm)
@@ -53,7 +53,7 @@ func (m *Memory) GetMetrics() map[string]interface{} {
 	for field, val := range inInterface {
 		_, ok := memoryMetrics[field]
 		if ok {
-			metrics[field] = val
+			metrics[field] = Value{VType: GAUGE, Value: val}
 		}
 	}
 
