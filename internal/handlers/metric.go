@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/mvigor/metricsd/cmd/server/storage"
+	"github.com/mvigor/metricsd/internal/storage"
 	"net/http"
 )
 

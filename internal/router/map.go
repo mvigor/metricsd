@@ -1,8 +1,8 @@
 package router
 
 import (
-	handlers2 "github.com/mvigor/metricsd/cmd/server/handlers"
-	"github.com/mvigor/metricsd/cmd/server/interfaces"
+	"github.com/mvigor/metricsd/internal/handlers"
+	"github.com/mvigor/metricsd/internal/interfaces"
 	"net/http"
 )
 
@@ -10,19 +10,19 @@ var Map = []interfaces.RoutingEndpoint{
 	{
 		Method:      http.MethodGet,
 		Pattern:     "/",
-		Handler:     handlers2.IndexHandler,
+		Handler:     handlers.IndexHandler,
 		Middlewares: interfaces.Middlewares{},
 	},
 	{
 		Method:      http.MethodGet,
 		Pattern:     "/{metric_name}",
-		Handler:     handlers2.ShowHandler,
+		Handler:     handlers.ShowHandler,
 		Middlewares: interfaces.Middlewares{},
 	},
 	{
 		Method:      http.MethodPost,
 		Pattern:     "/update/{metric_name}/{metric_value}",
-		Handler:     handlers2.UpdateHandler,
+		Handler:     handlers.UpdateHandler,
 		Middlewares: interfaces.Middlewares{},
 	},
 }
