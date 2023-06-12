@@ -1,25 +1,43 @@
 package main
 
 import (
-	"github.com/mvigor/metricsd/internal/interfaces"
-	router2 "github.com/mvigor/metricsd/internal/router"
-	"log"
-	"net/http"
+	"flag"
+	"fmt"
+	"github.com/caarlos0/env/v6"
+	"github.com/mvigor/metricsd/internal/utils"
 )
 
-func loadRoutingMap() interfaces.RoutingMap {
-	endpoints := router2.Map
-	return interfaces.RoutingMap{Endpoints: endpoints}
+const DefaultServer = "localhot:8080"
+
+type Config struct {
+	Address string `env:"ADDRESS"`
 }
 
 func main() {
 
-	r := router2.ChiRouter{}
-	mux, err := r.LoadRoutingTable(loadRoutingMap())
-
+	var serverEndpoint = DefaultServer
+	var cfg Config
+	err := env.Parse(&cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	log.Fatalln(http.ListenAndServe(":8080", mux))
+	addr := new(utils.NetAddress)
+	_ = flag.Value(addr)
+	flag.Var(addr, "a", "Net address host:port")
+	flag.Parse()
+
+	if len(addr.String()) > 2 {
+		serverEndpoint = addr.String()
+	}
+
+	if len(cfg.Address) > 2 {
+		serverEndpoint = cfg.Address
+	}
+
+	err = InitApp(serverEndpoint)
+	if err != nil {
+		panic(fmt.Sprintf("couldn't start application\n%s", err.Error()))
+	}
+
 }

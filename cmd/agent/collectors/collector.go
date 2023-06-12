@@ -1,5 +1,10 @@
 package collectors
 
+import (
+	"fmt"
+	"time"
+)
+
 var collectors = []Collector{
 	&Memory{},
 	&PoolCount{},
@@ -13,6 +18,15 @@ func CollectData() map[string]Value {
 		mergeMaps(metrics, res)
 	}
 	return metrics
+}
+
+func StartCollectors(poolInterval time.Duration) {
+	for _, collector := range collectors {
+		err := collector.StartCollector(poolInterval)
+		if err != nil {
+			panic(fmt.Sprintf("couldn't initialize collector %T", collector))
+		}
+	}
 }
 
 func mergeMaps(m1 map[string]Value, m2 map[string]Value) {

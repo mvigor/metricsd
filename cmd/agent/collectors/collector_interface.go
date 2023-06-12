@@ -1,5 +1,7 @@
 package collectors
 
+import "time"
+
 type CounterType string
 
 const (
@@ -13,4 +15,5 @@ type Value struct {
 }
 type Collector interface {
 	GetMetrics() map[string]Value
+	StartCollector(time.Duration) error
 }
