@@ -18,7 +18,7 @@ func ShowHandler(params map[string]string, storage storage.Storage) http.Handler
 		}
 
 		resp.Header().Set("Content-Type", "text/html")
-		if ok == false {
+		if !ok {
 			resp.WriteHeader(http.StatusNotFound)
 			return
 		}

@@ -77,9 +77,9 @@ func TestIndexHandler(t *testing.T) {
 			assert.Equal(t, res.StatusCode, tt.expectedCode)
 
 			if res.StatusCode == http.StatusOK {
+				defer res.Body.Close()
 				resBody, err := io.ReadAll(res.Body)
-
-				require.NoError(t, err)
+				defer require.NoError(t, err)
 
 				assert.Equal(t, tt.expectedBody, string(resBody))
 				assert.Equal(t, tt.expectedContentType, res.Header.Get("Content-Type"))

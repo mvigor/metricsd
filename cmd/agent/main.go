@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	client := apiclient.NewApiHttpClient("localhost:8080")
+	client := apiclient.NewAPIHttpClient("localhost:8080")
 	for {
 		res := collectors.CollectData()
 
