@@ -2,6 +2,10 @@ package storage
 
 type VType string
 
+var stor = &MemoryStorage{
+	Metrics: map[string]MetricRecord{},
+}
+
 const (
 	GAUGE   = VType("gauge")
 	COUNTER = VType("counter")
@@ -14,5 +18,5 @@ type Storage interface {
 }
 
 func GetStorage() Storage {
-	return &MemoryStorage{}
+	return stor
 }

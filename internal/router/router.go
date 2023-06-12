@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-var stor storage.Storage
-
 type ChiRouter struct {
 }
 
@@ -21,7 +19,7 @@ func (ChiR *ChiRouter) customHandler(action interfaces.RoutingEndpoint) http.Han
 			paramsMap[key] = params.Values[index]
 		}
 
-		action.Handler(paramsMap, stor)(w, r)
+		action.Handler(paramsMap, storage.GetStorage())(w, r)
 	}
 }
 
@@ -41,8 +39,6 @@ func (ChiR *ChiRouter) LoadRoutingTable(table interfaces.RoutingMap) (http.Handl
 			r.Method(action.Method, "/", ChiR.customHandler(action))
 		})
 	}
-
-	stor = storage.GetStorage()
 
 	return chiRouter, nil
 }
