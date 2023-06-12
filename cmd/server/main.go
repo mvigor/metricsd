@@ -7,7 +7,7 @@ import (
 	"github.com/mvigor/metricsd/internal/utils"
 )
 
-const DefaultServer = "localhot:8080"
+const DefaultServer = "localhost:8080"
 
 type Config struct {
 	Address string `env:"ADDRESS"`
