@@ -14,9 +14,9 @@ func (r MetricRecord) String() string {
 	switch r.VType {
 	case GAUGE:
 		switch i := r.Value.(type) {
-		case float64:
+		case float32, float64:
 			return fmt.Sprintf("%g", i)
-		case int:
+		case int, int8, int16, int32, int64:
 			return fmt.Sprintf("%d", i)
 		default:
 			return ""
