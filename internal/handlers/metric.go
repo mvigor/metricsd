@@ -24,7 +24,7 @@ func ShowHandler(params map[string]string, storage storage.Storage) http.Handler
 		}
 
 		resp.WriteHeader(http.StatusOK)
-		r := fmt.Sprintf("metric name = %s, value = %v", metricName, value)
+		r := fmt.Sprintf("%v", value)
 		resp.Write([]byte(r))
 	}
 }
