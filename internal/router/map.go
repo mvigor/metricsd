@@ -15,7 +15,7 @@ var Map = []interfaces.RoutingEndpoint{
 	},
 	{
 		Method:      http.MethodGet,
-		Pattern:     "/{metric_name}",
+		Pattern:     "/value/{metric_type}/{metric_name}",
 		Handler:     handlers.ShowHandler,
 		Middlewares: interfaces.Middlewares{},
 	},
