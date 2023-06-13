@@ -3,6 +3,7 @@ package collectors
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestMemory_GetMetrics(t *testing.T) {
@@ -18,6 +19,8 @@ func TestMemory_GetMetrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Memory{}
+			m.StartCollector(1 * time.Second)
+			time.Sleep(2 * time.Second)
 			assert.Equalf(t, tt.wantCount, len(m.GetMetrics()), "GetMetrics()")
 		})
 	}
