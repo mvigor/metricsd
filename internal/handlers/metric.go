@@ -47,7 +47,7 @@ func UpdateHandler(params map[string]string, storage storage.Storage) http.Handl
 			return
 		}
 		resp.Header().Set("Content-Type", "text/html")
-		resp.Write([]byte("updated"))
 		resp.WriteHeader(http.StatusOK)
+		resp.Write([]byte("updated"))
 	}
 }
