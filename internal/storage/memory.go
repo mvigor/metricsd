@@ -44,10 +44,9 @@ func (m *MemoryStorage) SetMetric(metricName string, metricValue string, metricT
 	if len(m.Metrics) == 0 {
 		m.Metrics = make(map[string]MetricRecord)
 	}
-	if rec.Value == COUNTER {
-		valPrev := m.Metrics[metricName].Value
-		valCurr := rec.Value
-		rec.Value = valPrev.(int) + valCurr.(int)
+	if rec.VType == COUNTER {
+		valPrev := m.Metrics[metricName].Value.(int64)
+		m.Metrics[metricName] = MetricRecord{VType: COUNTER, Value: rec.Value.(int64) + valPrev}
 		return nil
 	}
 	m.Metrics[metricName] = rec

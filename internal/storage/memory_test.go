@@ -40,7 +40,7 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 			fields: fields{
 				Metrics: map[string]MetricRecord{
 					"metric2": {
-						Value: 35,
+						Value: int64(32),
 						VType: COUNTER,
 					},
 				},
@@ -58,7 +58,7 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 			fields: fields{
 				Metrics: map[string]MetricRecord{
 					"metric2": {
-						Value: 35,
+						Value: int64(35),
 						VType: COUNTER,
 					},
 				},
