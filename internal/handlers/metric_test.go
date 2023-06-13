@@ -45,7 +45,7 @@ func TestShowHandler(t *testing.T) {
 			method:              http.MethodGet,
 			request:             map[string]string{"metric_name": "metric1"},
 			expectedCode:        http.StatusOK,
-			expectedBody:        "metric name = metric1, value = 0",
+			expectedBody:        "0",
 			expectedContentType: "text/html",
 		},
 		{
@@ -53,7 +53,7 @@ func TestShowHandler(t *testing.T) {
 			method:              http.MethodGet,
 			request:             map[string]string{"metric_name": "metric3"},
 			expectedCode:        http.StatusOK,
-			expectedBody:        "metric name = metric3, value = 444",
+			expectedBody:        "444",
 			expectedContentType: "text/html",
 		},
 		{
