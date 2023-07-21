@@ -2,8 +2,10 @@ package collectors
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/mvigor/metricsd/internal/entities"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPoolCount_GetMetrics(t *testing.T) {
@@ -13,16 +15,16 @@ func TestPoolCount_GetMetrics(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   map[string]Value
+		want   map[string]entities.MetricValue
 	}{
 		{
 			name: "test case #1",
 			fields: fields{
 				count: 0,
 			},
-			want: map[string]Value{
+			want: map[string]entities.MetricValue{
 				"PollCount": {
-					VType: COUNTER,
+					Type:  entities.COUNTER,
 					Value: 1,
 				},
 			},

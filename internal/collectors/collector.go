@@ -3,6 +3,8 @@ package collectors
 import (
 	"fmt"
 	"time"
+
+	"github.com/mvigor/metricsd/internal/entities"
 )
 
 var collectors = []Collector{
@@ -11,8 +13,8 @@ var collectors = []Collector{
 	&Random{},
 }
 
-func CollectData() map[string]Value {
-	metrics := make(map[string]Value)
+func CollectData() map[string]entities.MetricValue {
+	metrics := make(map[string]entities.MetricValue)
 	for _, collector := range collectors {
 		res := collector.GetMetrics()
 		mergeMaps(metrics, res)
@@ -29,7 +31,7 @@ func StartCollectors(poolInterval time.Duration) {
 	}
 }
 
-func mergeMaps(m1 map[string]Value, m2 map[string]Value) {
+func mergeMaps(m1 map[string]entities.MetricValue, m2 map[string]entities.MetricValue) {
 	for k, v := range m2 {
 		m1[k] = v
 	}
