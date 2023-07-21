@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"runtime"
 	"time"
+
+	entities "github.com/mvigor/metricsd/internal/entities"
 )
 
 var memoryMetrics = map[string]bool{
@@ -37,15 +39,15 @@ var memoryMetrics = map[string]bool{
 }
 
 type Memory struct {
-	values map[string]Value
+	values map[string]entities.MetricValue
 }
 
-func (m *Memory) GetMetrics() map[string]Value {
+func (m *Memory) GetMetrics() map[string]entities.MetricValue {
 	return m.values
 }
 
 func (m *Memory) StartCollector(poolInterval time.Duration) error {
-	m.values = make(map[string]Value)
+	m.values = make(map[string]entities.MetricValue)
 	go func() {
 
 		for {
@@ -62,7 +64,7 @@ func (m *Memory) StartCollector(poolInterval time.Duration) error {
 			for field, val := range inInterface {
 				_, ok := memoryMetrics[field]
 				if ok {
-					m.values[field] = Value{VType: GAUGE, Value: val}
+					m.values[field] = entities.MetricValue{Type: entities.GAUGE, Value: val}
 				}
 			}
 
