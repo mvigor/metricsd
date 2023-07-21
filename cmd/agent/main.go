@@ -22,7 +22,7 @@ func main() {
 
 	cfg := getParameters()
 
-	client := apiclient.NewHttpApiClient(cfg.Address)
+	client := apiclient.NewHTTPAPIClient(cfg.Address)
 	collectors.StartCollectors(time.Duration(cfg.PollInterval) * time.Second)
 	for {
 		time.Sleep(time.Duration(cfg.ReportInterval) * time.Second)

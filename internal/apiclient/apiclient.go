@@ -12,18 +12,18 @@ type APIClient interface {
 	PostMetric(string, entities.MetricValue) error
 }
 
-type HttpApiClient struct {
+type HTTPAPIClient struct {
 	server string
 	client http.Client
 }
 
-func NewHttpApiClient(server string) APIClient {
-	return &HttpApiClient{
+func NewHTTPAPIClient(server string) APIClient {
+	return &HTTPAPIClient{
 		server: server,
 	}
 }
 
-func (c *HttpApiClient) PostMetric(sname string, value entities.MetricValue) error {
+func (c *HTTPAPIClient) PostMetric(sname string, value entities.MetricValue) error {
 
 	url := fmt.Sprintf("http://%s/update/%s/%s/%s", c.server, value.Type, sname, serializeData(value.Value))
 	resp, err := c.client.Post(url, "text/html", nil)
