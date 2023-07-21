@@ -44,7 +44,7 @@ func (m *MemoryStorage) SetMetric(metricName string, metricValue string, metricT
 	if len(m.Metrics) == 0 {
 		m.Metrics = make(map[string]MetricRecord)
 	}
-	valPrev, ok := m.Metrics[metricName]
+	valPrev, ok := m.Metrics[metricType+"_"+metricName]
 	if rec.VType == COUNTER && rec.Value != nil && ok {
 		m.Metrics[metricName] = MetricRecord{VType: COUNTER, Value: rec.Value.(int64) + valPrev.Value.(int64)}
 		return nil
@@ -52,8 +52,8 @@ func (m *MemoryStorage) SetMetric(metricName string, metricValue string, metricT
 	m.Metrics[metricName] = rec
 	return nil
 }
-func (m *MemoryStorage) GetMetric(metricName string) (MetricRecord, bool) {
-	value, ok := m.Metrics[metricName]
+func (m *MemoryStorage) GetMetric(metricType string, metricName string) (MetricRecord, bool) {
+	value, ok := m.Metrics[metricType+"_"+metricName]
 	return value, ok
 }
 func (m *MemoryStorage) IndexMetrics() map[string]MetricRecord {
