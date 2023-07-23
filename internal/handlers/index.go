@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/mvigor/metricsd/internal/storage"
 	"net/http"
 	"sort"
+
+	"github.com/mvigor/metricsd/internal/storage"
 )
 
 func IndexHandler(params map[string]string, storage storage.Storage) http.HandlerFunc {
@@ -14,7 +15,9 @@ func IndexHandler(params map[string]string, storage storage.Storage) http.Handle
 			return
 		}
 
-		keys := make([]string, 0, len(storage.IndexMetrics()))
+		metrics := storage.IndexMetrics()
+
+		keys := make([]string, 0, len(metrics))
 		for k := range storage.IndexMetrics() {
 			keys = append(keys, k)
 		}
@@ -22,8 +25,8 @@ func IndexHandler(params map[string]string, storage storage.Storage) http.Handle
 
 		resp.Header().Set("Content-Type", "text/html")
 		for _, k := range keys {
-			val, _ := storage.GetMetric(k)
-			resp.Write([]byte(fmt.Sprintf("%s = %v<br>\n", k, val)))
+			val, _ := metrics[k]
+			resp.Write([]byte(fmt.Sprintf("%s = %s<br>\n", val.GetName(), val.ToString())))
 		}
 		resp.WriteHeader(http.StatusOK)
 	}

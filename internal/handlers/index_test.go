@@ -2,35 +2,25 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/mvigor/metricsd/internal/storage"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"sort"
 	"testing"
+
+	"github.com/mvigor/metricsd/internal/entities"
+	"github.com/mvigor/metricsd/internal/storage"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIndexHandler(t *testing.T) {
 	storage := storage.MemoryStorage{
-		Metrics: map[string]storage.MetricRecord{
-			"metric1": {
-				VType: storage.COUNTER,
-				Value: 11,
-			},
-			"metric2": {
-				VType: storage.COUNTER,
-				Value: 100,
-			},
-			"metric3": {
-				VType: storage.COUNTER,
-				Value: 200,
-			},
-			"metric4": {
-				VType: storage.COUNTER,
-				Value: 202,
-			},
+		Metrics: map[string]entities.Metric{
+			"counter_metric1": entities.NewMetricCounter("metric1", 11),
+			"counter_metric2": entities.NewMetricCounter("metric2", 100),
+			"counter_metric3": entities.NewMetricCounter("metric3", 200),
+			"counter_metric4": entities.NewMetricCounter("metric4", 202),
 		},
 	}
 
@@ -43,7 +33,7 @@ func TestIndexHandler(t *testing.T) {
 
 	for _, k := range keys {
 		val := storage.Metrics[k]
-		successBody += fmt.Sprintf("%s = %v<br>\n", k, val)
+		successBody += fmt.Sprintf("%s = %s<br>\n", val.GetName(), val.ToString())
 	}
 
 	testCases := []struct {

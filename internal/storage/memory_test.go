@@ -1,14 +1,16 @@
 package storage
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/mvigor/metricsd/internal/entities"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMemoryStorage_SetMetric(t *testing.T) {
 	type fields struct {
-		Metrics map[string]MetricRecord
+		Metrics map[string]entities.Metric
 	}
 	type args struct {
 		metricName  string
@@ -25,7 +27,7 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]MetricRecord{},
+				Metrics: map[string]entities.Metric{},
 			},
 			args: args{
 				metricName:  "metric 1",
@@ -38,11 +40,8 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 		{
 			name: "test case #2",
 			fields: fields{
-				Metrics: map[string]MetricRecord{
-					"metric2": {
-						Value: int64(32),
-						VType: COUNTER,
-					},
+				Metrics: map[string]entities.Metric{
+					"counter_metric2": entities.NewMetricCounter("metric2", 0),
 				},
 			},
 			args: args{
@@ -56,11 +55,8 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 		{
 			name: "test case #3",
 			fields: fields{
-				Metrics: map[string]MetricRecord{
-					"metric2": {
-						Value: int64(35),
-						VType: COUNTER,
-					},
+				Metrics: map[string]entities.Metric{
+					"counter_metric2": entities.NewMetricCounter("metric2", 35),
 				},
 			},
 			args: args{
@@ -74,14 +70,19 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			metric, err := entities.MetricFactory(tt.args.metricType, tt.args.metricName, tt.args.metricValue)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
 			m := &MemoryStorage{
 				Metrics: tt.fields.Metrics,
 			}
 			if tt.wantErr {
-				assert.Error(t, m.SetMetric(tt.args.metricName, tt.args.metricValue, tt.args.metricType))
+				assert.Error(t, m.SetMetric(metric))
 				return
 			}
-			assert.NoError(t, m.SetMetric(tt.args.metricName, tt.args.metricValue, tt.args.metricType))
+			assert.NoError(t, m.SetMetric(metric))
 			assert.Equal(t, len(m.Metrics), tt.wantCount)
 		})
 	}
@@ -89,7 +90,7 @@ func TestMemoryStorage_SetMetric(t *testing.T) {
 
 func TestMemoryStorage_GetMetric(t *testing.T) {
 	type fields struct {
-		Metrics map[string]MetricRecord
+		Metrics map[string]entities.Metric
 	}
 	type args struct {
 		metricName  string
@@ -106,27 +107,16 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]MetricRecord{
-					"metric1": {
-						VType: COUNTER,
-						Value: 11,
-					},
-					"metric2": {
-						VType: GAUGE,
-						Value: 44,
-					},
-					"metric3": {
-						VType: COUNTER,
-						Value: 55,
-					},
-					"metric4": {
-						VType: COUNTER,
-						Value: 66,
-					},
+				Metrics: map[string]entities.Metric{
+					"counter_metric1": entities.NewMetricCounter("metric1", 11),
+					"gauge_metric2":   entities.NewMetricGauge("metric2", 44),
+					"counter_metric3": entities.NewMetricCounter("metric3", 55),
+					"counter_metric4": entities.NewMetricCounter("metric5", 66),
 				},
 			},
 			args: args{
 				metricName: "metric1",
+				metricType: COUNTER,
 			},
 			wantOk:    true,
 			wantValue: 11,
@@ -134,28 +124,17 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 		{
 			name: "test case #2",
 			fields: fields{
-				Metrics: map[string]MetricRecord{
-					"metric1": {
-						VType: COUNTER,
-						Value: 33,
-					},
-					"metric2": {
-						VType: GAUGE,
-						Value: 44,
-					},
-					"metric3": {
-						VType: COUNTER,
-						Value: 55,
-					},
-					"metric4": {
-						VType: COUNTER,
-						Value: 66,
-					},
+				Metrics: map[string]entities.Metric{
+					"counter_metric1": entities.NewMetricCounter("metric1", 33),
+					"gauge_metric2":   entities.NewMetricGauge("metric2", 44),
+					"counter_metric3": entities.NewMetricCounter("metric3", 55),
+					"counter_metric4": entities.NewMetricCounter("metric4", 66),
 				},
 			},
 			args: args{
 				metricName:  "metric5",
 				metricValue: 11,
+				metricType:  COUNTER,
 			},
 			wantOk: false,
 		},
@@ -165,10 +144,10 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 			m := &MemoryStorage{
 				Metrics: tt.fields.Metrics,
 			}
-			v, ok := m.GetMetric(tt.args.metricName)
+			v, ok := m.GetMetric(string(tt.args.metricType), tt.args.metricName)
 			assert.Equal(t, tt.wantOk, ok)
 			if ok {
-				assert.Equal(t, tt.wantValue, v.Value)
+				assert.Equal(t, tt.wantValue, v.GetValue())
 			}
 		})
 	}
@@ -176,52 +155,28 @@ func TestMemoryStorage_GetMetric(t *testing.T) {
 
 func TestMemoryStorage_IndexMetrics(t *testing.T) {
 	type fields struct {
-		Metrics map[string]MetricRecord
+		Metrics map[string]entities.Metric
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   map[string]MetricRecord
+		want   map[string]entities.Metric
 	}{
 		{
 			name: "test case #1",
 			fields: fields{
-				Metrics: map[string]MetricRecord{
-					"metric1": {
-						VType: COUNTER,
-						Value: 55,
-					},
-					"metric2": {
-						VType: COUNTER,
-						Value: 66,
-					},
-					"metric3": {
-						VType: COUNTER,
-						Value: 77,
-					},
-					"metric4": {
-						VType: COUNTER,
-						Value: 88,
-					},
+				Metrics: map[string]entities.Metric{
+					"counter_metric1": entities.NewMetricCounter("metric1", 55),
+					"counter_metric2": entities.NewMetricCounter("metric2", 66),
+					"counter_metric3": entities.NewMetricCounter("metric3", 77),
+					"counter_metric4": entities.NewMetricCounter("metric4", 88),
 				},
 			},
-			want: map[string]MetricRecord{
-				"metric1": {
-					VType: COUNTER,
-					Value: 55,
-				},
-				"metric2": {
-					VType: COUNTER,
-					Value: 66,
-				},
-				"metric3": {
-					VType: COUNTER,
-					Value: 77,
-				},
-				"metric4": {
-					VType: COUNTER,
-					Value: 88,
-				},
+			want: map[string]entities.Metric{
+				"counter_metric1": entities.NewMetricCounter("metric1", 55),
+				"counter_metric2": entities.NewMetricCounter("metric2", 66),
+				"counter_metric3": entities.NewMetricCounter("metric3", 77),
+				"counter_metric4": entities.NewMetricCounter("metric4", 88),
 			},
 		},
 	}

@@ -1,9 +1,11 @@
 package storage
 
+import "github.com/mvigor/metricsd/internal/entities"
+
 type VType string
 
 var stor = &MemoryStorage{
-	Metrics: map[string]MetricRecord{},
+	Metrics: map[string]entities.Metric{},
 }
 
 const (
@@ -12,9 +14,9 @@ const (
 )
 
 type Storage interface {
-	SetMetric(metricName string, metricValue string, metricType string) error
-	GetMetric(metricName string) (MetricRecord, bool)
-	IndexMetrics() map[string]MetricRecord
+	SetMetric(metric entities.Metric) error
+	GetMetric(metricType string, metricName string) (entities.Metric, bool)
+	IndexMetrics() map[string]entities.Metric
 }
 
 func GetStorage() Storage {

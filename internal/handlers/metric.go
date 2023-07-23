@@ -1,15 +1,17 @@
 package handlers
 
 import (
-	"fmt"
-	"github.com/mvigor/metricsd/internal/storage"
 	"net/http"
+
+	"github.com/mvigor/metricsd/internal/entities"
+	"github.com/mvigor/metricsd/internal/storage"
 )
 
 func ShowHandler(params map[string]string, storage storage.Storage) http.HandlerFunc {
 
 	metricName := params["metric_name"]
-	value, ok := storage.GetMetric(metricName)
+	metricType := params["metric_type"]
+	value, ok := storage.GetMetric(metricType, metricName)
 
 	return func(resp http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodGet {
@@ -24,8 +26,7 @@ func ShowHandler(params map[string]string, storage storage.Storage) http.Handler
 		}
 
 		resp.WriteHeader(http.StatusOK)
-		r := fmt.Sprintf("%v", value)
-		resp.Write([]byte(r))
+		resp.Write([]byte(value.ToString()))
 	}
 }
 
@@ -41,7 +42,13 @@ func UpdateHandler(params map[string]string, storage storage.Storage) http.Handl
 			return
 		}
 
-		err := storage.SetMetric(metricName, metricValue, metricType)
+		metric, err := entities.MetricFactory(metricType, metricName, metricValue)
+		if err != nil {
+			resp.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		err = storage.SetMetric(metric)
 		if err != nil {
 			resp.WriteHeader(http.StatusBadRequest)
 			return

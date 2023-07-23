@@ -1,34 +1,24 @@
 package handlers
 
 import (
-	"github.com/mvigor/metricsd/internal/storage"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/mvigor/metricsd/internal/entities"
+	"github.com/mvigor/metricsd/internal/storage"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestShowHandler(t *testing.T) {
 	storage := storage.MemoryStorage{
-		Metrics: map[string]storage.MetricRecord{
-			"metric1": {
-				VType: storage.GAUGE,
-				Value: 0,
-			},
-			"metric2": {
-				VType: storage.COUNTER,
-				Value: 1,
-			},
-			"metric3": {
-				VType: storage.GAUGE,
-				Value: 444,
-			},
-			"metric4": {
-				VType: storage.COUNTER,
-				Value: 50000,
-			},
+		Metrics: map[string]entities.Metric{
+			"gauge_metric1":   entities.NewMetricGauge("metric1", 0.1),
+			"counter_metric2": entities.NewMetricCounter("metric2", 1),
+			"gauge_metric3":   entities.NewMetricGauge("metric3", 4.00005),
+			"counter_metric4": entities.NewMetricCounter("metric4", 50000),
 		},
 	}
 
@@ -43,23 +33,23 @@ func TestShowHandler(t *testing.T) {
 		{
 			name:                "test case #1",
 			method:              http.MethodGet,
-			request:             map[string]string{"metric_name": "metric1"},
+			request:             map[string]string{"metric_type": "gauge", "metric_name": "metric1"},
 			expectedCode:        http.StatusOK,
-			expectedBody:        "0",
+			expectedBody:        "0.1",
 			expectedContentType: "text/html",
 		},
 		{
 			name:                "test case #2",
 			method:              http.MethodGet,
-			request:             map[string]string{"metric_name": "metric3"},
+			request:             map[string]string{"metric_type": "gauge", "metric_name": "metric3"},
 			expectedCode:        http.StatusOK,
-			expectedBody:        "444",
+			expectedBody:        "4.00005",
 			expectedContentType: "text/html",
 		},
 		{
 			name:                "test case #3",
 			method:              http.MethodGet,
-			request:             map[string]string{"metric_name": "metri"},
+			request:             map[string]string{"metric_type": "gauge", "metric_name": "metri"},
 			expectedCode:        http.StatusNotFound,
 			expectedBody:        "",
 			expectedContentType: "text/html",
@@ -67,21 +57,21 @@ func TestShowHandler(t *testing.T) {
 		{
 			name:         "test case #4",
 			method:       http.MethodPut,
-			request:      map[string]string{"metric_name": "metric12"},
+			request:      map[string]string{"metric_type": "gauge", "metric_name": "metric12"},
 			expectedCode: http.StatusMethodNotAllowed,
 			expectedBody: "",
 		},
 		{
 			name:         "test case #5",
 			method:       http.MethodDelete,
-			request:      map[string]string{"metric_name": "metric12"},
+			request:      map[string]string{"metric_type": "gauge", "metric_name": "metric12"},
 			expectedCode: http.StatusMethodNotAllowed,
 			expectedBody: "",
 		},
 		{
 			name:         "test case #6",
 			method:       http.MethodPost,
-			request:      map[string]string{"metric_name": "metric12"},
+			request:      map[string]string{"metric_type": "gauge", "metric_name": "metric12"},
 			expectedCode: http.StatusMethodNotAllowed,
 			expectedBody: "",
 		},
@@ -93,7 +83,7 @@ func TestShowHandler(t *testing.T) {
 			handlerFunc := ShowHandler(tt.request, &storage)
 			handlerFunc(w, request)
 			res := w.Result()
-			assert.Equal(t, res.StatusCode, tt.expectedCode)
+			assert.Equal(t, tt.expectedCode, res.StatusCode)
 
 			if res.StatusCode == http.StatusOK {
 				defer res.Body.Close()
@@ -119,7 +109,7 @@ func TestUpdateHandler(t *testing.T) {
 		args       args
 		method     string
 		wantCount  int
-		wantResult map[string]storage.MetricRecord
+		wantResult map[string]entities.Metric
 		wantStatus int
 	}{
 		{
@@ -132,24 +122,15 @@ func TestUpdateHandler(t *testing.T) {
 					"metric_value": "102",
 				},
 				storage: &storage.MemoryStorage{
-					Metrics: map[string]storage.MetricRecord{
-						"metric1": {
-							VType: storage.COUNTER,
-							Value: 100,
-						},
+					Metrics: map[string]entities.Metric{
+						"counter_metric1": entities.NewMetricCounter("metric1", 100),
 					},
 				},
 			},
 			wantCount: 2,
-			wantResult: map[string]storage.MetricRecord{
-				"metric1": {
-					VType: storage.COUNTER,
-					Value: 100,
-				},
-				"metric2": {
-					VType: storage.COUNTER,
-					Value: 102,
-				},
+			wantResult: map[string]entities.Metric{
+				"counter_metric1": entities.NewMetricCounter("metric1", 100),
+				"counter_metric2": entities.NewMetricCounter("metric2", 102),
 			},
 			wantStatus: http.StatusOK,
 		},
@@ -163,20 +144,14 @@ func TestUpdateHandler(t *testing.T) {
 					"metric_type":  "gauge",
 				},
 				storage: &storage.MemoryStorage{
-					Metrics: map[string]storage.MetricRecord{
-						"metric2": {
-							VType: storage.COUNTER,
-							Value: 100,
-						},
+					Metrics: map[string]entities.Metric{
+						"counter_metric2": entities.NewMetricCounter("metric2", 100),
 					},
 				},
 			},
 			wantCount: 1,
-			wantResult: map[string]storage.MetricRecord{
-				"metric2": {
-					VType: storage.COUNTER,
-					Value: 102,
-				},
+			wantResult: map[string]entities.Metric{
+				"counter_metric2": entities.NewMetricCounter("metric2", 102),
 			},
 			wantStatus: http.StatusOK,
 		},
@@ -188,16 +163,13 @@ func TestUpdateHandler(t *testing.T) {
 					"metric2": "test",
 				},
 				storage: &storage.MemoryStorage{
-					Metrics: map[string]storage.MetricRecord{
-						"metric3": {
-							VType: storage.GAUGE,
-							Value: 0.0001,
-						},
+					Metrics: map[string]entities.Metric{
+						"gauge_metric3": entities.NewMetricGauge("metric3", 0.0001),
 					},
 				},
 			},
 			wantCount:  0,
-			wantResult: map[string]storage.MetricRecord{},
+			wantResult: map[string]entities.Metric{},
 			wantStatus: http.StatusBadRequest,
 		},
 	}
