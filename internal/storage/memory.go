@@ -12,6 +12,7 @@ func (m *MemoryStorage) SetMetric(metric entities.Metric) error {
 	existMetric, ok := m.Metrics[metric.GetHash()]
 	if !ok {
 		m.Metrics[metric.GetHash()] = metric
+		return nil
 	}
 	existMetric.SetValue(metric.GetStruct())
 	return nil
