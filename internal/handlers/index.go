@@ -25,7 +25,7 @@ func IndexHandler(params map[string]string, storage storage.Storage) http.Handle
 
 		resp.Header().Set("Content-Type", "text/html")
 		for _, k := range keys {
-			val, _ := metrics[k]
+			val := metrics[k]
 			resp.Write([]byte(fmt.Sprintf("%s = %s<br>\n", val.GetName(), val.ToString())))
 		}
 		resp.WriteHeader(http.StatusOK)
