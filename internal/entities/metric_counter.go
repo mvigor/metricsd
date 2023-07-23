@@ -4,7 +4,7 @@ import "fmt"
 
 type MetricCounter MetricValue
 
-func NewMetricCounter(name string, val int64) (m *MetricCounter) {
+func NewMetricCounter(name string, val int) (m *MetricCounter) {
 	return &MetricCounter{
 		Value: val,
 		Name:  name,
@@ -13,7 +13,7 @@ func NewMetricCounter(name string, val int64) (m *MetricCounter) {
 }
 
 func (m *MetricCounter) SetValue(value MetricValue) {
-	m.Value = m.Value.(int64) + value.Value.(int64)
+	m.Value = m.Value.(int) + value.Value.(int)
 }
 
 func (m *MetricCounter) GetValue() interface{} {

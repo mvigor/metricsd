@@ -38,7 +38,7 @@ func MetricFactory(metricType string, metricName string, metricValue string) (Me
 		}
 		return NewMetricGauge(metricName, val), nil
 	case "counter":
-		val, err := strconv.ParseInt(metricValue, 10, 64)
+		val, err := strconv.Atoi(metricValue)
 		if err != nil {
 			return nil, err
 		}

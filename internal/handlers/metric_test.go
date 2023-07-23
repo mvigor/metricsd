@@ -149,9 +149,10 @@ func TestUpdateHandler(t *testing.T) {
 					},
 				},
 			},
-			wantCount: 1,
+			wantCount: 2,
 			wantResult: map[string]entities.Metric{
 				"counter_metric2": entities.NewMetricCounter("metric2", 102),
+				"gauge_metric2":   entities.NewMetricGauge("metric2", 102),
 			},
 			wantStatus: http.StatusOK,
 		},
