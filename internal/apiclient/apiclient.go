@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mvigor/metricsd/internal/entities"
+	"github.com/mvigor/metricsd/internal/utils"
 
 	"net/http"
 )
@@ -31,6 +32,16 @@ func (c *HTTPAPIClient) PostMetric(sname string, value entities.MetricValue) err
 		return err
 	}
 	defer resp.Body.Close()
+
+	logger := utils.GetLogger()
+	sugar := logger.Sugar()
+	defer sugar.Desugar()
+
+	sugar.Infoln(
+		"code", resp.StatusCode,
+		"size", resp.ContentLength,
+	)
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("server returned status code %d", resp.StatusCode)
 	}

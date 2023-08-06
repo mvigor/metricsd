@@ -34,6 +34,9 @@ func (ChiR *ChiRouter) LoadRoutingTable(table interfaces.RoutingMap) (http.Handl
 
 	for _, action := range table.Endpoints {
 		chiRouter.Route(action.Pattern, func(r chi.Router) {
+			if len(action.Middlewares) > 0 {
+				r.Use(action.Middlewares...)
+			}
 			r.Method(action.Method, "/", ChiR.customHandler(action))
 		})
 	}
