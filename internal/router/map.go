@@ -33,4 +33,12 @@ var Map = []interfaces.RoutingEndpoint{
 			middlewares.WithLogging,
 		},
 	},
+	{
+		Method:  http.MethodPost,
+		Pattern: "/update/",
+		Handler: handlers.UpdateJsonHandler,
+		Middlewares: interfaces.Middlewares{
+			middlewares.WithLogging,
+		},
+	},
 }

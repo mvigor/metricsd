@@ -46,3 +46,14 @@ func MetricFactory(metricType string, metricName string, metricValue string) (Me
 	}
 	return nil, errors.New("invalid metric type")
 }
+
+func MetricJsonFactory(metrics ApiMetrics) (Metric, error) {
+	metricType := strings.ToLower(metrics.MType)
+	switch metricType {
+	case "gauge":
+		return NewMetricGauge(metrics.ID, *metrics.Value), nil
+	case "counter":
+		return NewMetricCounter(metrics.ID, int(*metrics.Delta)), nil
+	}
+	return nil, errors.New("invalid metric type")
+}

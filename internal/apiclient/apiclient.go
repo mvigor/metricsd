@@ -1,6 +1,8 @@
 package apiclient
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 
 	"github.com/mvigor/metricsd/internal/entities"
@@ -26,8 +28,27 @@ func NewHTTPAPIClient(server string) APIClient {
 
 func (c *HTTPAPIClient) PostMetric(sname string, value entities.MetricValue) error {
 
-	url := fmt.Sprintf("http://%s/update/%s/%s/%s", c.server, value.Type, sname, serializeData(value.Value))
-	resp, err := c.client.Post(url, "text/html", nil)
+	metric := entities.ApiMetrics{
+		ID:    sname,
+		MType: string(value.Type),
+	}
+
+	switch value.Type {
+	case entities.GAUGE:
+		val := value.Value.(float64)
+		metric.Value = &val
+		break
+	case entities.COUNTER:
+		val := value.Value.(int64)
+		metric.Delta = &val
+		break
+	}
+
+	url := fmt.Sprintf("http://%s/update/", c.server)
+
+	jsonBody, _ := json.Marshal(metric)
+
+	resp, err := c.client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return err
 	}
@@ -47,13 +68,4 @@ func (c *HTTPAPIClient) PostMetric(sname string, value entities.MetricValue) err
 	}
 
 	return nil
-}
-
-func serializeData(value interface{}) string {
-	switch value.(type) {
-	case float64, float32:
-		return fmt.Sprintf("%g", value)
-	default:
-		return fmt.Sprintf("%d", value)
-	}
 }
